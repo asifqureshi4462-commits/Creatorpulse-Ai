@@ -23,12 +23,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
 
       # --- FRONTEND BUILD ---
       - name: Install Frontend Dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: npm install
 
       - name: Build Vite Frontend
         working-directory: ./frontend
@@ -43,7 +42,7 @@ jobs:
       # --- BACKEND VALIDATION ---
       - name: Install Backend Dependencies
         working-directory: ./backend
-        run: npm ci
+        run: npm install
 
       - name: Generate Prisma Client
         working-directory: ./backend
