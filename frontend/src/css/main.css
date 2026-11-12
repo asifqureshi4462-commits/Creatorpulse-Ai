@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0a0a1c;
+  --bg-2: #11112b;
+  --card: rgba(23, 23, 58, 0.72);
+  --card-solid: #17173a;
+  --border: rgba(124, 92, 255, 0.22);
+  --text: #ffffff;
+  --muted: #a4a7c9;
+  --primary: #6d5dfc;
+  --primary-2: #2f9bff;
+  --good: #22c55e;
+  --bad: #ef4444;
+  --warn: #f59e0b;
+  --input: rgba(255, 255, 255, 0.05);
+  --grad: linear-gradient(90deg, #6d5dfc, #2f9bff);
+}
+html.light {
+  --bg: #f2f3fb;
+  --bg-2: #e8eaf7;
+  --card: rgba(255, 255, 255, 0.85);
+  --card-solid: #ffffff;
+  --border: rgba(109, 93, 252, 0.25);
+  --text: #15163a;
+  --muted: #5c607f;
+  --input: rgba(20, 20, 60, 0.05);
+}
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(900px 500px at 8% -10%, rgba(109, 93, 252, 0.28), transparent 60%),
+    radial-gradient(800px 500px at 100% 110%, rgba(47, 155, 255, 0.2), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: rgba(109, 93, 252, 0.45); }
+* { scrollbar-width: thin; scrollbar-color: rgba(124, 92, 255, 0.4) transparent; }
+.muted { color: var(--muted); }
+.grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.fade-in { animation: fadeIn 0.35s ease both; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulseGlow { 0%, 100% { filter: drop-shadow(0 0 14px rgba(109, 93, 252, 0.55)); } 50% { filter: drop-shadow(0 0 30px rgba(47, 155, 255, 0.8)); } }

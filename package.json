@@ -1,0 +1,15 @@
+{
+  "name": "creatorpulse-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CreatorPulse AI - independent AI-powered YouTube Creator Studio (Developer: Asif Qureshi)",
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:worker": "npm --prefix backend run worker",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "db:push": "npm --prefix backend run db:push",
+    "db:migrate": "npm --prefix backend run prisma:migrate"
+  }
+}

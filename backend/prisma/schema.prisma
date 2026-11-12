@@ -1,0 +1,252 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String             @id @default(cuid())
+  googleId        String             @unique
+  email           String             @unique
+  name            String?
+  picture         String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  channels        ConnectedChannel[]
+  token           OAuthToken?
+  settings        UserSettings?
+  analyses        AiAnalysis[]
+  recommendations AiRecommendation[]
+  alerts          PerformanceAlert[]
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+
+  @@map("users")
+}
+
+model ConnectedChannel {
+  id                String            @id @default(cuid())
+  userId            String
+  youtubeChannelId  String
+  title             String
+  description       String?           @db.Text
+  thumbnail         String?
+  customUrl         String?
+  uploadsPlaylistId String?
+  subscriberCount   Int               @default(0)
+  hiddenSubscribers Boolean           @default(false)
+  viewCount         BigInt            @default(0)
+  videoCount        Int               @default(0)
+  lastSyncedAt      DateTime?
+  createdAt         DateTime          @default(now())
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videos            Video[]
+  snapshots         ChannelAnalytics[]
+  comments          Comment[]
+  recommendationsRel AiRecommendation[]
+
+  @@unique([userId, youtubeChannelId])
+  @@index([userId])
+  @@map("connected_channels")
+}
+
+model OAuthToken {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  accessTokenEnc  String    @db.Text
+  refreshTokenEnc String?   @db.Text
+  scope           String?   @db.Text
+  expiryDate      DateTime?
+  needsReauth     Boolean   @default(false)
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("oauth_tokens")
+}
+
+model Video {
+  id             String             @id @default(cuid())
+  channelId      String
+  youtubeVideoId String
+  title          String
+  description    String             @default("") @db.Text
+  tags           String[]
+  categoryId     String?
+  publishedAt    DateTime
+  thumbnail      String?
+  privacyStatus  String             @default("public")
+  duration       String?
+  viewCount      BigInt             @default(0)
+  likeCount      BigInt             @default(0)
+  commentCount   BigInt             @default(0)
+  lastSyncedAt   DateTime           @default(now())
+  createdAt      DateTime           @default(now())
+  channel        ConnectedChannel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  analytics      VideoAnalytics[]
+  alerts         PerformanceAlert[]
+  analyses       AiAnalysis[]
+
+  @@unique([channelId, youtubeVideoId])
+  @@index([channelId, publishedAt])
+  @@map("videos")
+}
+
+model VideoAnalytics {
+  id                String   @id @default(cuid())
+  videoId           String
+  capturedAt        DateTime @default(now())
+  views             BigInt   @default(0)
+  likes             BigInt   @default(0)
+  comments          BigInt   @default(0)
+  watchMinutes      Float?
+  avgViewDuration   Float?
+  avgViewPercentage Float?
+  isInitialCheck    Boolean  @default(false)
+  video             Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([videoId, capturedAt])
+  @@map("video_analytics")
+}
+
+model ChannelAnalytics {
+  id         String           @id @default(cuid())
+  channelId  String
+  capturedAt DateTime         @default(now())
+  subscribers Int             @default(0)
+  views      BigInt           @default(0)
+  videos     Int              @default(0)
+  channel    ConnectedChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([channelId, capturedAt])
+  @@map("channel_analytics")
+}
+
+model Comment {
+  id               String           @id @default(cuid())
+  channelId        String
+  youtubeCommentId String
+  youtubeThreadId  String
+  videoYoutubeId   String?
+  authorName       String
+  authorImage      String?
+  authorChannelId  String?
+  text             String           @db.Text
+  likeCount        Int              @default(0)
+  replyCount       Int              @default(0)
+  publishedAt      DateTime
+  fetchedAt        DateTime         @default(now())
+  channel          ConnectedChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, youtubeCommentId])
+  @@index([channelId, publishedAt])
+  @@map("comments")
+}
+
+model AiAnalysis {
+  id        String   @id @default(cuid())
+  userId    String
+  videoId   String?
+  type      String
+  input     Json
+  result    Json
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video     Video?   @relation(fields: [videoId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@map("ai_analyses")
+}
+
+model AiRecommendation {
+  id        String            @id @default(cuid())
+  userId    String
+  channelId String?
+  type      String
+  payload   Json
+  createdAt DateTime          @default(now())
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel   ConnectedChannel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
+
+  @@index([userId, type, createdAt])
+  @@map("ai_recommendations")
+}
+
+model PerformanceAlert {
+  id                  String   @id @default(cuid())
+  userId              String
+  videoId             String
+  kind                String
+  priority            String   @default("medium")
+  title               String
+  detectedChange      String   @db.Text
+  possibleExplanation String   @db.Text
+  recommendedAction   String   @db.Text
+  metrics             Json?
+  createdAt           DateTime @default(now())
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video               Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([videoId, kind, createdAt])
+  @@map("performance_alerts")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String   @db.Text
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt])
+  @@map("notifications")
+}
+
+model ScheduledJob {
+  id         String    @id @default(cuid())
+  name       String
+  status     String
+  message    String?   @db.Text
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  @@index([name, startedAt])
+  @@map("scheduled_jobs")
+}
+
+model UserSettings {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  theme          String   @default("dark")
+  notifyAlerts   Boolean  @default(true)
+  notifyAi       Boolean  @default(true)
+  notifyAnalytics Boolean @default(true)
+  notifyAuth     Boolean  @default(true)
+  aiLanguage     String   @default("English")
+  aiTone         String   @default("friendly")
+  regionCode     String   @default("US")
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  metadata  Json?
+  ip        String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@map("audit_logs")
+}
