@@ -13,7 +13,8 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(
   cors({
-    origin: [env.frontendUrl, 'http://localhost:5173'],
+    // https://localhost / capacitor://localhost are the origins of the Android (Capacitor) app
+    origin: [env.frontendUrl, 'http://localhost:5173', 'https://localhost', 'capacitor://localhost'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     maxAge: 600,
