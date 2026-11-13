@@ -9,10 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/browser": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
     "chart.js": "^4.4.6",
     "lucide": "^0.469.0"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
